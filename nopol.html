@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CEK MEMBER</title>
+  <style>
+    body{font-family:system-ui;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;background:#f4f6f8}
+    .card{background:#fff;padding:24px;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,0.06);width:360px}
+    label{display:block;margin-bottom:8px;font-weight:600}
+    input{width:100%;padding:10px;border:1px solid #d1d5db;border-radius:6px;margin-bottom:12px}
+    button{width:100%;padding:10px;border-radius:6px;border:0;background:#2563eb;color:white;font-weight:700;cursor:pointer}
+    .hint{font-size:13px;color:#6b7280;margin-top:8px}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>CEK MEMBER</h2>
+    <label for="nopol">NOPOL</label>
+    <input id="nopol" type="text" placeholder="Contoh: B1234CD" />
+    <button id="cekBtn">CEK</button>
+    <p class="hint">Masukkan nomor polisi lalu klik CEK.</p>
+  </div>
+
+  <script>
+    document.getElementById('cekBtn').addEventListener('click', () => {
+      const nopol = document.getElementById('nopol').value.trim();
+      if (!nopol) {
+        alert('Mohon isi NOPOL terlebih dahulu');
+        return;
+      }
+      window.location.href = `member.html?nopol=${encodeURIComponent(nopol)}`;
+    });
+
+    document.getElementById('nopol').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') document.getElementById('cekBtn').click();
+    });
+  </script>
+</body>
+</html>
