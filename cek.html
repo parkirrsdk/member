@@ -6619,7 +6619,7 @@
         <head>
           <meta charset="utf-8" />
           <title>Hasil Cek Nopol ${safeNopol}</title>
-          <style>
+           <style>
     .hasil {
       margin-top: 20px;
       font-size: 22px;          /* Membesarkan ukuran huruf */
@@ -6630,117 +6630,6 @@
       padding: 16px;
       border-radius: 10px;
       display: none;            /* Awalnya disembunyikan */
-    }
-  </style>
-
-  <script>
-    const dataKaryawan = [ /* data tetap seperti semula */ ];
-
-    document.getElementById("cekBtn").addEventListener("click", () => {
-      const nopolInput = document.getElementById("nopol").value.trim().toUpperCase();
-      const hasilDiv = document.getElementById("hasil");
-
-      const karyawan = dataKaryawan.find(d => d.nopol === nopolInput);
-
-      if (karyawan) {
-        hasilDiv.innerHTML = `
-          🚗 <br>
-          Nopol: ${karyawan.nopol}<br>
-          Nama: ${karyawan.nama}<br>
-          Alamat: ${karyawan.alamat}<br>
-          Jenis: ${karyawan.jenis}
-        `;
-      } else {
-        hasilDiv.innerHTML = `❌ Data tidak ditemukan untuk Nopol: ${nopolInput}`;
-      }
-
-      hasilDiv.style.display = "block";
-    });
-  </script>
-💡 Hasilnya:
-
-Ketika pengguna mengisi nopol dan klik “CEK”, hasil akan muncul di bawah tombol.
-
-Teks hasil tampil besar, tebal, dan mudah dibaca.
-
-Warna dan latar belakangnya membantu agar hasil terlihat mencolok.
-
-Apakah kamu ingin hasilnya muncul di halaman baru (bukan di bawah tombol)? Kalau iya, saya bisa ubah skripnya supaya membuka tampilan hasil di halaman terpisah.
-
-
-
-
-
-
-
-Anda bilang:
-buatkan agar pada tampilan mobile, hasil cek nopol menjadi lebih besar, bagi menjadi dua responsive breakpoint 
-
-
-
-ChatGPT bilang:
-Baik 👍 — berikut contoh versi responsif dua breakpoint (untuk mobile dan desktop),
-di mana tampilan hasil cek nopol akan lebih besar di HP dan lebih proporsional di layar besar.
-
-Kamu cukup ganti bagian bawah file cek.html (mulai dari <div class="card"> hingga akhir file) dengan versi berikut👇
-
-html
-Salin kode
-  <div class="card">
-    <h1>CEK NOPOL</h1>
-    <label for="nopol">Masukkan Nopol</label>
-    <input type="text" id="nopol" placeholder="Contoh= H5535MW" autofocus />
-    <button id="cekBtn">CEK</button>
-
-    <!-- Tampilan hasil -->
-    <div id="hasil" class="hasil"></div>
-  </div>
-
-  <style>
-    /* Style umum */
-    .hasil {
-      margin-top: 20px;
-      font-weight: bold;
-      text-align: center;
-      color: #0f172a;
-      background: #e0f2fe;
-      padding: 16px;
-      border-radius: 10px;
-      display: none;
-      line-height: 1.5;
-      transition: all 0.3s ease;
-    }
-
-    /* Breakpoint 1: untuk layar kecil (mobile) */
-    @media (max-width: 600px) {
-      .card {
-        width: 90%;
-        padding: 20px;
-      }
-      .hasil {
-        font-size: 26px;       /* Lebih besar di HP */
-        padding: 20px;
-      }
-      h1 {
-        font-size: 24px;
-      }
-      input, button {
-        font-size: 18px;
-        padding: 14px;
-      }
-    }
-
-    /* Breakpoint 2: untuk layar besar (tablet/desktop) */
-    @media (min-width: 601px) {
-      .card {
-        width: 360px;
-      }
-      .hasil {
-        font-size: 20px;
-      }
-      h1 {
-        font-size: 22px;
-      }
     }
   </style>
         </head>
