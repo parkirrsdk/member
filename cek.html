@@ -6619,19 +6619,33 @@
         <head>
           <meta charset="utf-8" />
           <title>Hasil Cek Nopol ${safeNopol}</title>
-           <style>
-    .hasil {
-      margin-top: 20px;
-      font-size: 22px;          /* Membesarkan ukuran huruf */
-      font-weight: bold;        /* Membuat teks tebal */
-      text-align: center;       /* Rata tengah */
-      color: #0f172a;           /* Warna teks gelap */
-      background: #e0f2fe;      /* Latar belakang biru muda */
-      padding: 16px;
-      border-radius: 10px;
-      display: none;            /* Awalnya disembunyikan */
+          <style>
+           @media (max-width: 600px) {
+      .card {
+        width: 90%;
+        padding: 20px;
+      }
+      .hasil {
+        font-size: 26px;       /* Lebih besar di HP */
+        padding: 20px;
+      }
+      h1 {
+        font-size: 24px;
+      }
+      input, button {
+        font-size: 18px;
+        padding: 14px;
+      }
     }
-  </style>
+            body { font-family: system-ui, Arial; background:lightblue; padding:24px; color:#111; }
+            .box { background:white; padding:100px; border-radius:20px; box-shadow:0 6px 20px rgba(0,0,0,0.08); max-width:480px; margin:auto; }
+            h1 { font-size:30px; margin-bottom:12px; }
+            table { width:100%; border-collapse:collapse; margin-top:10px; }
+            td { padding:6px 8px; vertical-align:top; }
+            .label { color:#555; width:90px; font-weight:600; }
+            .notfound { color:red; font-weight:600; }
+            button { margin-top:16px; padding:10px 14px; border:none; background:#0ea5a0; color:white; border-radius:8px; cursor:pointer; font-weight:800; }
+          </style>
         </head>
         <body>
           <div class="box">
@@ -6662,7 +6676,3 @@
   </script>
 </body>
 </html>
-
-
-
-
