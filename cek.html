@@ -6623,15 +6623,76 @@
           <meta charset="utf-8" />
           <title>Hasil Cek Nopol ${safeNopol}</title>
           <style>
-            body { font-family: system-ui, Arial; background:lightblue; padding:24px; color:#111; }
-            .box { background:white; padding:100px; border-radius:20px; box-shadow:0 6px 20px rgba(0,0,0,0.08); max-width:480px; margin:auto; }
-            h1 { font-size:30px; margin-bottom:12px; }
-            table { width:100%; border-collapse:collapse; margin-top:10px; }
-            td { padding:6px 8px; vertical-align:top; }
-            .label { color:#555; width:90px; font-weight:600; }
-            .notfound { color:red; font-weight:600; }
-            button { margin-top:16px; padding:10px 14px; border:none; background:#0ea5a0; color:white; border-radius:8px; cursor:pointer; font-weight:800; }
-          </style>
+    /* Style umum */
+    .hasil {
+      margin-top: 20px;
+      font-weight: bold;
+      text-align: center;
+      color: #0f172a;
+      background: #e0f2fe;
+      padding: 16px;
+      border-radius: 10px;
+      display: none;
+      line-height: 1.5;
+      transition: all 0.3s ease;
+    }
+
+    /* Breakpoint 1: untuk layar kecil (mobile) */
+    @media (max-width: 600px) {
+      .card {
+        width: 90%;
+        padding: 20px;
+      }
+      .hasil {
+        font-size: 26px;       /* Lebih besar di HP */
+        padding: 20px;
+      }
+      h1 {
+        font-size: 24px;
+      }
+      input, button {
+        font-size: 18px;
+        padding: 14px;
+      }
+    }
+
+    /* Breakpoint 2: untuk layar besar (tablet/desktop) */
+    @media (min-width: 601px) {
+      .card {
+        width: 360px;
+      }
+      .hasil {
+        font-size: 20px;
+      }
+      h1 {
+        font-size: 22px;
+      }
+    }
+  </style>
+  <script>
+    const dataKaryawan = [ /* data tetap seperti semula */ ];
+
+    document.getElementById("cekBtn").addEventListener("click", () => {
+      const nopolInput = document.getElementById("nopol").value.trim().toUpperCase();
+      const hasilDiv = document.getElementById("hasil");
+
+      const karyawan = dataKaryawan.find(d => d.nopol === nopolInput);
+
+      if (karyawan) {
+        hasilDiv.innerHTML = `
+          🚗 <br>
+          Nopol: ${karyawan.nopol}<br>
+          Nama: ${karyawan.nama}<br>
+          Alamat: ${karyawan.alamat}<br>
+          Jenis: ${karyawan.jenis}
+        `;
+      } else {
+        hasilDiv.innerHTML = `❌ Data tidak ditemukan untuk Nopol: ${nopolInput}`;
+      }
+
+      hasilDiv.style.display = "block";
+    });
+  </script>
         </head>
         <body>
           <div class="box">
@@ -6662,4 +6723,5 @@
   </script>
 </body>
 </html>
+
 
