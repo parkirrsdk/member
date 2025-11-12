@@ -6648,9 +6648,7 @@
         alert('Silakan isi Nopol terlebih dahulu.');
         return;
       }
-      // Encode nopol agar aman di URL
       const encoded = encodeURIComponent(nopol);
-      // Arahkan ke halaman nextPage.html di folder yang sama
       window.location.href = `nextPage.html?nopol=${encoded}`;
     });
 
@@ -6661,4 +6659,5 @@
   </script>
 </body>
 </html>
+
 
