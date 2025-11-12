@@ -1,19 +1,153 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hasil Cek Member</title>
-    <style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hasil Cek Member</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+      background: lightblue;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      color: #111;
+    }
 
-    </style>
+    .container {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+      padding: 40px;
+      max-width: 480px;
+      width: 90%;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 20px;
+      color: #0f172a;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    td {
+      padding: 8px;
+      text-align: left;
+    }
+
+    .label {
+      color: #555;
+      font-weight: 600;
+      width: 120px;
+    }
+
+    .notfound {
+      color: red;
+      font-weight: bold;
+      font-size: 20px;
+      margin-top: 10px;
+    }
+
+    button {
+      margin-top: 24px;
+      padding: 12px 18px;
+      border: none;
+      border-radius: 8px;
+      background: #0ea5a0;
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: #089489;
+    }
+
+    /* ✅ Responsif untuk mobile */
+    @media (max-width: 600px) {
+      .container {
+        width: 94%;
+        padding: 30px 16px;
+      }
+
+      h1 {
+        font-size: 26px;
+      }
+
+      td {
+        font-size: 18px;
+        display: block;
+        text-align: left;
+      }
+
+      .label {
+        display: block;
+        font-size: 16px;
+        color: #0f172a;
+      }
+
+      button {
+        width: 100%;
+        font-size: 18px;
+        padding: 14px;
+      }
+    }
+  </style>
 </head>
 <body>
-    
-    <h1>Hasil Cek Member</h1>
-    
-    <script>
 
-    </script>
+  <div class="container">
+    <h1>Hasil Cek Member</h1>
+    <div id="hasil"></div>
+    <button onclick="window.location.href='cek.html'">← Kembali ke Cek Nopol</button>
+  </div>
+
+  <script>
+    // Data contoh (bisa sama seperti di cek.html)
+    const dataKaryawan = [
+      { nopol: "AD6589AHC", nama: "PRASETYO", alamat: "KASUARI", jenis: "MOTOR" },
+      { nopol: "H4474NW", nama: "NINIK WAHYUNINGRUM", alamat: "KASUARI", jenis: "MOTOR" },
+      { nopol: "K2560JK", nama: "YOSSY ARUM TEJANINGTIAS", alamat: "POLIKLINIK KASUARI", jenis: "MOTOR" },
+      { nopol: "K5028GJ", nama: "Siti Umaeroh", alamat: "KASUARI", jenis: "MOTOR" },
+      { nopol: "AG5569KDS", nama: "RETNO DWI YULIANA", alamat: "KASUARI LT. 4", jenis: "MOTOR" },
+      { nopol: "AD3788ALC", nama: "Helmy Kurniawan", alamat: "KASUARI LT. 4", jenis: "MOTOR" },
+    ];
+
+    // Baca parameter dari URL
+    const params = new URLSearchParams(window.location.search);
+    const nopol = (params.get("nopol") || "").toUpperCase();
+    const hasilDiv = document.getElementById("hasil");
+
+    if (!nopol) {
+      hasilDiv.innerHTML = `<p class="notfound">⚠️ Nopol tidak ditemukan di URL.</p>`;
+    } else {
+      const data = dataKaryawan.find(d => d.nopol === nopol);
+      if (data) {
+        hasilDiv.innerHTML = `
+          <table>
+            <tr><td class="label">NOPOL</td><td>${data.nopol}</td></tr>
+            <tr><td class="label">NAMA</td><td>${data.nama}</td></tr>
+            <tr><td class="label">ALAMAT</td><td>${data.alamat}</td></tr>
+            <tr><td class="label">JENIS</td><td>${data.jenis}</td></tr>
+          </table>
+        `;
+      } else {
+        hasilDiv.innerHTML = `<p class="notfound">❌ Nopol <b>${nopol}</b> tidak terdaftar sebagai member.</p>`;
+      }
+    }
+  </script>
+
 </body>
 </html>
