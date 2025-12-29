@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cek Parkir NFC</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding: 20px; background: #ececec; }
+        .card { background: white; padding: 20px; border-radius: 15px; shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        #status { font-weight: bold; margin-top: 20px; color: #007bff; }
+        .expired { color: red !important; }
+        .aktif { color: green !important; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Scanner Parkir NFC</h2>
+    <p>Tekan tombol di bawah dan tempelkan kartu di belakang HP</p>
+    <button id="scanBtn" style="padding: 15px 30px; font-size: 16px; border-radius: 8px; cursor: pointer;">Mulai Scan Kartu</button>
+    
+    <div id="result" style="margin-top: 30px; display: none; text-align: left;">
+        <hr>
+        <p><strong>UID:</strong> <span id="uidText"></span></p>
+        <p><strong>Nama:</strong> <span id="namaText"></span></p>
+        <p><strong>Masa Berlaku:</strong> <span id="tglText"></span></p>
+        <p><strong>Status:</strong> <span id="statusText"></span></p>
+    </div>
+    
+    <p id="status">Menunggu perintah...</p>
+</div>
+
+<script>
+    // Data dummy (Dalam aplikasi nyata, ini diambil dari API/Database)
+    async function displayData(uid) {
+    const statusMsg = document.getElementById('status');
+    const resultDiv = document.getElementById('result');
+
+    try {
+        // Memanggil file PHP (Ganti URL sesuai lokasi file php kamu)
+        const response = await fetch(cek_kartu.php?uid=${uid});
+        const data = await response.json();
+
+        if (data.status === "success") {
+            resultDiv.style.display = "block";
+            document.getElementById('uidText').innerText = uid;
+            document.getElementById('namaText').innerText = data.nama;
+            document.getElementById('tglText').innerText = data.expired;
+            
+            const statusEl = document.getElementById('statusText');
+            statusEl.innerText = data.keterangan;
+            statusEl.className = (data.keterangan === "AKTIF") ? "aktif" : "expired";
+            
+            statusMsg.innerText = "Data Ditemukan!";
+        } else {
+            alert("Peringatan: " + data.message);
+            statusMsg.innerText = "Kartu Tidak Dikenali.";
+        }
+    } catch (error) {
+        console.error("Gagal mengambil data:", error);
+        statusMsg.innerText = "Koneksi ke server gagal.";
+    }
+}
+
+    const scanBtn = document.getElementById('scanBtn');
+    const statusMsg = document.getElementById('status');
+
+    scanBtn.onclick = async () => {
+        if ('NDEFReader' in window) {
+            try {
+                const ndef = new NDEFReader();
+                await ndef.scan();
+                statusMsg.innerText = "Mendengarkan... Tempelkan kartu!";
+
+                ndef.onreading = event => {
+                    const serialNumber = event.serialNumber;
+                    displayData(serialNumber);
+                };
+
+            } catch (error) {
+                statusMsg.innerText = "Error: " + error;
+            }
+        } else {
+            statusMsg.innerText = "Web NFC tidak didukung di browser ini. Gunakan Chrome di Android.";
+        }
+    };
+
+    function displayData(uid) {
+        const data = databaseParkir[uid] || { nama: "Tidak Terdaftar", expired: "-" };
+        
+        document.getElementById('result').style.display = "block";
+        document.getElementById('uidText').innerText = uid;
+        document.getElementById('namaText').innerText = data.nama;
+        document.getElementById('tglText').innerText = data.expired;
+
+        const statusEl = document.getElementById('statusText');
+        if (data.expired !== "-") {
+            const expDate = new Date(data.expired);
+            const today = new Date();
+            if (expDate >= today) {
+                statusEl.innerText = "AKTIF";
+                statusEl.className = "aktif";
+            } else {
+                statusEl.innerText = "EXPIRED";
+                statusEl.className = "expired";
+            }
+        } else {
+            statusEl.innerText = "INVALID";
+        }
+        statusMsg.innerText = "Scan Berhasil!";
+    }
+</script>
+</body>
+</html>
