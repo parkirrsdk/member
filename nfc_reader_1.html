@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NFC UID Reader</title>
-<script src="https://cdn.tailwindcss.com"></script>
-
-<style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="NFC UID Reader - Baca kartu NFC dan kirim ke WhatsApp">
+    <title>NFC UID Reader - WhatsApp Sender</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
 @keyframes bounce {0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 .animate-bounce-custom{animation:bounce 1s ease-in-out}
 
@@ -45,93 +45,434 @@
 }
 </style>
 </head>
+<body>
+    <div id="root"></div>
 
-<body class="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 min-h-screen">
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-<div id="root"></div>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 
-<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script type="text/babel">
+        const { useState, useEffect } = React;
 
-<script type="text/babel">
-const {useState,useEffect}=React;
+        // Icon Components (using lucide)
+        const Icon = ({ name, className = "w-5 h-5" }) => {
+            const icons = {
+                nfc: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${className}"><path d="M6 8.32a7.43 7.43 0 0 1 0 7.36"/><path d="M9.46 6.21a11.76 11.76 0 0 1 0 11.58"/><path d="M12.91 4.1a15.91 15.91 0 0 1 .01 15.8"/><path d="M16.37 2a20.16 20.16 0 0 1 0 20"/></svg>`,
+                send: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${className}"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>`,
+                copy: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${className}"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>`,
+                history: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${className}"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>`,
+                phone: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${className}"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>`,
+                check: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${className}"><path d="M20 6 9 17l-5-5"/></svg>`,
+                checkCircle: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${className}"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>`,
+                alertCircle: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${className}"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>`,
+                arrowLeft: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${className}"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>`,
+                smartphone: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${className}"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>`
+            };
+            return <span dangerouslySetInnerHTML={{ __html: icons[name] || '' }} />;
+        };
 
-const Icon=()=>(
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-<path d="M6 8.32a7.43 7.43 0 0 1 0 7.36"/>
-<path d="M9.46 6.21a11.76 11.76 0 0 1 0 11.58"/>
-<path d="M12.91 4.1a15.91 15.91 0 0 1 .01 15.8"/>
-<path d="M16.37 2a20.16 20.16 0 0 1 0 20"/>
-</svg>
-);
+        function NFCReaderApp() {
+            const [currentPage, setCurrentPage] = useState('scan');
+            const [uid, setUid] = useState('');
+            const [cardType, setCardType] = useState('');
+            const [scanTime, setScanTime] = useState('');
+            const [status, setStatus] = useState('Ready to scan');
+            const [statusType, setStatusType] = useState('ready');
+            const [isScanning, setIsScanning] = useState(false);
+            const [scanHistory, setScanHistory] = useState([]);
+            const [showHistory, setShowHistory] = useState(false);
+            const [nfcSupported, setNfcSupported] = useState(true);
+            const [copied, setCopied] = useState(false);
 
-function App(){
-const [uid,setUid]=useState("");
-const [status,setStatus]=useState("Siap memindai NFC");
-const [scan,setScan]=useState(false);
-const [page,setPage]=useState("scan");
+            useEffect(() => {
+                if (!('NDEFReader' in window)) {
+                    setNfcSupported(false);
+                    setStatus('NFC not supported on this browser');
+                    setStatusType('error');
+                }
 
-async function start(){
- if(!("NDEFReader" in window)){
-  alert("NFC tidak didukung di browser ini");
-  return;
- }
- try{
-  setScan(true);
-  setStatus("Tempelkan kartu NFC...");
-  const ndef=new NDEFReader();
-  await ndef.scan();
-  ndef.onreading=e=>{
-   const id=(e.serialNumber||"").replace(/:/g,"");
-   setUid(id);
-   setStatus("Kartu terdeteksi!");
-   navigator.vibrate&&navigator.vibrate(120);
-   setTimeout(()=>{setPage("result");setScan(false)},500);
-  }
- }catch(err){
-  setStatus("Gagal membaca NFC");
-  setScan(false);
- }
-}
+                const savedHistory = localStorage.getItem('nfc_history');
+                if (savedHistory) setScanHistory(JSON.parse(savedHistory));
+            }, []);
 
-return page==="scan"?(
-<div className="p-6 flex flex-col items-center justify-center min-h-screen text-center text-white">
-<div className="mb-8">
-<div className="relative w-40 h-40 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-2xl">
-{scan&&<>
-<span className="nfc-wave"></span>
-<span className="nfc-wave delay"></span>
-</>}
-<Icon className={"w-20 h-20 "+(scan?"animate-nfc":"")} />
-</div>
-</div>
+            const startNFCScan = async () => {
+                if (!('NDEFReader' in window)) {
+                    alert('NFC is not supported on this browser. Please use Chrome on Android or Safari on iOS 13+');
+                    return;
+                }
 
-<h1 className="text-3xl font-bold mb-2">NFC UID Reader</h1>
-<p className="text-purple-200 mb-6">{status}</p>
+                try {
+                    setIsScanning(true);
+                    setStatus('Scanning... Tap your NFC card');
+                    setStatusType('scanning');
 
-<button onClick={start} disabled={scan}
-className="px-8 py-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 font-bold text-lg shadow-xl active:scale-95">
-{scan?"Memindai...":"Mulai Pindai NFC"}
-</button>
-</div>
-):(
-<div className="p-6 flex flex-col items-center justify-center min-h-screen text-white text-center">
-<div className="w-28 h-28 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl flex items-center justify-center shadow-2xl animate-bounce-custom mb-6">
-✓
-</div>
-<h2 className="text-2xl font-bold mb-3">UID Kartu</h2>
-<div className="glass p-5 rounded-2xl text-xl font-mono text-indigo-700 mb-6">{uid}</div>
+                    const ndef = new NDEFReader();
+                    await ndef.scan();
 
-<button onClick={()=>{setPage("scan");setUid("");setStatus("Siap memindai NFC")}}
-className="px-8 py-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 font-bold shadow-xl">
-Pindai Lagi
-</button>
-</div>
-);
-}
+                    ndef.addEventListener('reading', ({ message, serialNumber }) => {
+                        const uidHex = (serialNumber || '').toUpperCase().replace(/:/g, '');
+                        const timestamp = new Date().toLocaleString('id-ID');
+                        
+                        setUid(uidHex);
+                        setScanTime(timestamp);
+                        
+                        let type = 'Unknown';
+                        if (uidHex.length === 8) type = 'MIFARE Classic/Ultralight';
+                        else if (uidHex.length === 14) type = 'ISO-DEP/DESFire';
+                        else if (uidHex.length === 16) type = 'MIFARE Classic 7-byte';
+                        
+                        setCardType(type);
+                        setStatus('Card detected successfully!');
+                        setStatusType('success');
+                        
+                        if (navigator.vibrate) {
+                            navigator.vibrate(100);
+                        }
+                        
+                        saveToHistory(uidHex, type, timestamp);
+                        
+                        setIsScanning(false);
+                        
+                        setTimeout(() => {
+                            setCurrentPage('result');
+                        }, 500);
+                    });
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
-</script>
+                    ndef.addEventListener('readingerror', () => {
+                        setStatus('Error reading NFC card. Try again.');
+                        setStatusType('error');
+                        setIsScanning(false);
+                    });
+
+                } catch (error) {
+                    console.error('NFC Error:', error);
+                    if (error.name === 'NotAllowedError') {
+                        setStatus('NFC permission denied. Please allow NFC access.');
+                    } else {
+                        setStatus('Error: ' + error.message);
+                    }
+                    setStatusType('error');
+                    setIsScanning(false);
+                }
+            };
+
+            const saveToHistory = (uidValue, type, timestamp) => {
+                const newEntry = {
+                    uid: uidValue,
+                    type: type,
+                    timestamp: timestamp
+                };
+                
+                const updatedHistory = [newEntry, ...scanHistory].slice(0, 50);
+                setScanHistory(updatedHistory);
+                localStorage.setItem('nfc_history', JSON.stringify(updatedHistory));
+            };
+
+            const copyUID = () => {
+                if (!uid) {
+                    alert('No UID to copy');
+                    return;
+                }
+                
+                navigator.clipboard.writeText(uid).then(() => {
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                });
+            };
+
+            // Perubahan utama: kirim hanya UID, tanpa nomor, dan jangan diarahkan ke "nomor sendiri".
+            // Prioritaskan Web Share API (share sheet) -> deep link whatsapp app -> fallback ke WhatsApp Web.
+            const sendToWhatsApp = () => {
+                if (!uid) {
+                    alert('Please scan an NFC card first');
+                    return;
+                }
+
+                const message = uid; // hanya UID
+
+                const whatsappApp = `whatsapp://send?text=${encodeURIComponent(message)}`;
+                const whatsappWeb = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+
+                // Jika Web Share API tersedia, gunakan itu (user memilih aplikasi & penerima)
+                if (navigator.share) {
+                    navigator.share({ text: message })
+                        .catch(() => {
+                            // jika gagal/share dibatalkan, coba deep link
+                            tryOpenWhatsApp();
+                        });
+                    return;
+                }
+
+                tryOpenWhatsApp();
+
+                function tryOpenWhatsApp() {
+                    // Untuk perangkat mobile, coba deep link aplikasi terlebih dahulu
+                    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+                    if (isMobile) {
+                        // Coba buka scheme whatsapp. Jika tidak merespon, fallback ke web setelah delay.
+                        window.location.href = whatsappApp;
+                        setTimeout(() => {
+                            // fallback ke web jika app tidak terbuka atau user di desktop
+                            window.open(whatsappWeb, '_blank');
+                        }, 1200);
+                    } else {
+                        // Desktop: buka WhatsApp Web (tidak menyertakan nomor)
+                        window.open(whatsappWeb, '_blank');
+                    }
+                }
+            };
+
+            const scanAgain = () => {
+                setCurrentPage('scan');
+                setUid('');
+                setCardType('');
+                setScanTime('');
+                setStatus('Ready to scan');
+                setStatusType('ready');
+                setCopied(false);
+            };
+
+            const clearHistory = () => {
+                if (confirm('Clear all scan history?')) {
+                    setScanHistory([]);
+                    localStorage.removeItem('nfc_history');
+                    setShowHistory(false);
+                }
+            };
+
+            const getStatusColor = () => {
+                switch (statusType) {
+                    case 'success': return 'text-green-600';
+                    case 'error': return 'text-red-600';
+                    case 'scanning': return 'text-blue-600';
+                    default: return 'text-indigo-600';
+                }
+            };
+
+            const getStatusIcon = () => {
+                switch (statusType) {
+                    case 'success': return <Icon name="checkCircle" />;
+                    case 'error': return <Icon name="alertCircle" />;
+                    default: return null;
+                }
+            };
+
+            // ========== HALAMAN SCAN ==========
+            if (currentPage === 'scan') {
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 p-4 sm:p-8">
+                        <div className="max-w-md mx-auto">
+                            <div className="text-center mb-8">
+                                <div className="inline-flex items-center justify-center w-20 h-20 bg-indigo-600 rounded-full mb-4 shadow-lg">
+                                    <Icon name="nfc" className="w-10 h-10 text-white" />
+                                </div>
+                                <h1 className="text-3xl font-bold text-gray-800 mb-2">NFC UID Reader</h1>
+                                <p className="text-gray-600">Tap your NFC card to read UID</p>
+                            </div>
+
+                            <div className="bg-white rounded-2xl shadow-xl p-6 mb-6">
+                                <div className="text-center">
+                                    <div className={`flex items-center justify-center gap-2 mb-4 ${getStatusColor()} font-semibold`}>
+                                        {getStatusIcon()}
+                                        <span>{status}</span>
+                                    </div>
+                                    
+                                    <div className={`inline-flex items-center justify-center w-32 h-32 rounded-full mb-6 transition-all ${
+                                        isScanning ? 'bg-blue-100 animate-pulse scale-110' : 'bg-indigo-100'
+                                    }`}>
+                                        <Icon name="nfc" className={`w-16 h-16 ${isScanning ? 'text-blue-600' : 'text-indigo-600'}`} />
+                                    </div>
+
+                                    {!nfcSupported && (
+                                        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                                            <div className="flex items-start gap-3">
+                                                <Icon name="alertCircle" className="w-5 h-5 text-red-600 mt-0.5" />
+                                                <div className="text-left">
+                                                    <p className="text-sm font-semibold text-red-800 mb-1">NFC Not Supported</p>
+                                                    <p className="text-xs text-red-600">
+                                                        Please use Chrome on Android or Safari on iOS 13+ to access NFC features.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <button
+                                        onClick={startNFCScan}
+                                        disabled={!nfcSupported || isScanning}
+                                        className={`w-full py-5 px-6 rounded-xl font-bold text-lg text-white transition-all ${
+                                            !nfcSupported || isScanning
+                                                ? 'bg-gray-400 cursor-not-allowed'
+                                                : 'bg-indigo-600 hover:bg-indigo-700 active:scale-95 shadow-lg hover:shadow-xl'
+                                        }`}
+                                    >
+                                        {isScanning ? (
+                                            <span className="flex items-center justify-center gap-2">
+                                                <div className="w-5 h-5 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
+                                                Scanning...
+                                            </span>
+                                        ) : (
+                                            'Start NFC Scan'
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={() => setShowHistory(!showHistory)}
+                                className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-white hover:bg-gray-50 rounded-xl font-semibold text-gray-700 transition-all shadow-md"
+                            >
+                                <Icon name="history" />
+                                {showHistory ? 'Hide History' : 'View History'} ({scanHistory.length})
+                            </button>
+
+                            {showHistory && (
+                                <div className="mt-6 bg-white rounded-2xl shadow-xl p-6">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-lg font-bold text-gray-800">Scan History</h3>
+                                        {scanHistory.length > 0 && (
+                                            <button
+                                                onClick={clearHistory}
+                                                className="text-sm text-red-600 hover:text-red-700 font-semibold"
+                                            >
+                                                Clear All
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    {scanHistory.length === 0 ? (
+                                        <p className="text-gray-500 text-center py-8">No history available</p>
+                                    ) : (
+                                        <div className="space-y-3 max-h-96 overflow-y-auto">
+                                            {scanHistory.map((entry, index) => (
+                                                <div key={index} className="bg-gray-50 rounded-lg p-4 border border-gray-200 hover:border-indigo-300 transition-colors">
+                                                    <p className="font-mono font-bold text-gray-800 mb-1">{entry.uid}</p>
+                                                    <p className="text-xs text-gray-600">{entry.type}</p>
+                                                    <p className="text-xs text-gray-500 mt-1">{entry.timestamp}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            <div className="mt-8 text-center">
+                                <div className="inline-flex items-center gap-2 bg-blue-50 px-4 py-2 rounded-lg">
+                                    <Icon name="smartphone" className="w-4 h-4 text-blue-600" />
+                                    <p className="text-xs text-blue-700">
+                                        Works best on Chrome (Android) or Safari (iOS 13+)
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            // ========== HALAMAN RESULT ==========
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-green-100 via-emerald-50 to-teal-100 p-4 sm:p-8">
+                    <div className="max-w-md mx-auto">
+                        <div className="flex items-center mb-6">
+                            <button
+                                onClick={scanAgain}
+                                className="flex items-center gap-2 text-gray-600 hover:text-gray-800 font-semibold"
+                            >
+                                <Icon name="arrowLeft" />
+                                Back
+                            </button>
+                        </div>
+
+                        <div className="text-center mb-8">
+                            <div className="inline-flex items-center justify-center w-24 h-24 bg-green-600 rounded-full mb-4 shadow-lg animate-bounce-custom">
+                                <Icon name="checkCircle" className="w-14 h-14 text-white" />
+                            </div>
+                            <h1 className="text-3xl font-bold text-gray-800 mb-2">Scan Successful!</h1>
+                            <p className="text-gray-600">Card information has been read</p>
+                        </div>
+
+                        <div className="bg-white rounded-2xl shadow-xl p-6 mb-6">
+                            <h3 className="text-sm font-semibold text-gray-500 mb-4">Card Information</h3>
+                            
+                            <div className="mb-4">
+                                <label className="text-xs text-gray-500 mb-1 block">UID</label>
+                                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg p-4 border-2 border-indigo-200">
+                                    <p className="text-2xl font-bold text-gray-800 font-mono break-all">
+                                        {uid}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="mb-4">
+                                <label className="text-xs text-gray-500 mb-1 block">Card Type</label>
+                                <div className="bg-gray-50 rounded-lg p-3">
+                                    <p className="text-base font-semibold text-gray-700">{cardType}</p>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="text-xs text-gray-500 mb-1 block">Scanned At</label>
+                                <div className="bg-gray-50 rounded-lg p-3">
+                                    <p className="text-sm text-gray-700">{scanTime}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={copyUID}
+                            className={`w-full flex items-center justify-center gap-2 py-4 px-4 rounded-xl font-semibold transition-all mb-4 ${
+                                copied
+                                    ? 'bg-green-600 text-white'
+                                    : 'bg-indigo-600 text-white hover:bg-indigo-700 active:scale-95'
+                            } shadow-lg`}
+                        >
+                            {copied ? (
+                                <>
+                                    <Icon name="check" />
+                                    Copied to Clipboard!
+                                </>
+                            ) : (
+                                <>
+                                    <Icon name="copy" />
+                                    Copy UID
+                                </>
+                            )}
+                        </button>
+
+                        <div className="bg-white rounded-2xl shadow-xl p-6 mb-6">
+                            <h3 className="text-lg font-bold text-gray-800 mb-4">Send to WhatsApp</h3>
+                            
+                            <p className="text-sm text-gray-600 mb-4">
+                                Tidak perlu memasukkan nomor — Anda akan memilih penerima di WhatsApp. Pesan yang dikirim hanya berisi UID.
+                            </p>
+
+                            <button
+                                onClick={sendToWhatsApp}
+                                className="w-full flex items-center justify-center gap-2 py-4 px-4 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold text-lg transition-all active:scale-95 shadow-lg"
+                            >
+                                <Icon name="send" className="w-6 h-6" />
+                                Send to WhatsApp
+                            </button>
+                        </div>
+
+                        <button
+                            onClick={scanAgain}
+                            className="w-full py-4 px-4 bg-white hover:bg-gray-50 text-gray-700 rounded-xl font-semibold transition-all shadow-md"
+                        >
+                            Scan Another Card
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<NFCReaderApp />);
+    </script>
 </body>
 </html>
