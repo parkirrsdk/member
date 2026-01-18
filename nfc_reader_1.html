@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NFC UID Reader</title>
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+@keyframes bounce {0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.animate-bounce-custom{animation:bounce 1s ease-in-out}
+
+@keyframes spin {to{transform:rotate(360deg)}}
+.animate-spin{animation:spin 1s linear infinite}
+
+@keyframes float {0%,100%{transform:translateY(0)}50%{transform:translateY(-20px)}}
+.animate-float{animation:float 4s ease-in-out infinite}
+
+@keyframes nfc-wave {
+  0% {transform:scale(.8);opacity:.8}
+  100% {transform:scale(2.4);opacity:0}
+}
+.nfc-wave{
+  position:absolute;
+  inset:0;
+  border-radius:9999px;
+  border:3px solid rgba(99,102,241,.6);
+  animation:nfc-wave 2.5s infinite
+}
+.nfc-wave.delay{animation-delay:1.25s}
+
+@keyframes nfc-tilt {
+  0%,100%{transform:rotate(0)}
+  50%{transform:rotate(4deg)}
+}
+.animate-nfc{
+  animation:nfc-tilt 2s ease-in-out infinite;
+  filter:drop-shadow(0 0 25px rgba(99,102,241,.9))
+}
+
+.glass{
+  background:rgba(255,255,255,.85);
+  backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,.3)
+}
+</style>
+</head>
+
+<body class="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 min-h-screen">
+
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<script type="text/babel">
+const {useState,useEffect}=React;
+
+const Icon=()=>(
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+<path d="M6 8.32a7.43 7.43 0 0 1 0 7.36"/>
+<path d="M9.46 6.21a11.76 11.76 0 0 1 0 11.58"/>
+<path d="M12.91 4.1a15.91 15.91 0 0 1 .01 15.8"/>
+<path d="M16.37 2a20.16 20.16 0 0 1 0 20"/>
+</svg>
+);
+
+function App(){
+const [uid,setUid]=useState("");
+const [status,setStatus]=useState("Siap memindai NFC");
+const [scan,setScan]=useState(false);
+const [page,setPage]=useState("scan");
+
+async function start(){
+ if(!("NDEFReader" in window)){
+  alert("NFC tidak didukung di browser ini");
+  return;
+ }
+ try{
+  setScan(true);
+  setStatus("Tempelkan kartu NFC...");
+  const ndef=new NDEFReader();
+  await ndef.scan();
+  ndef.onreading=e=>{
+   const id=(e.serialNumber||"").replace(/:/g,"");
+   setUid(id);
+   setStatus("Kartu terdeteksi!");
+   navigator.vibrate&&navigator.vibrate(120);
+   setTimeout(()=>{setPage("result");setScan(false)},500);
+  }
+ }catch(err){
+  setStatus("Gagal membaca NFC");
+  setScan(false);
+ }
+}
+
+return page==="scan"?(
+<div className="p-6 flex flex-col items-center justify-center min-h-screen text-center text-white">
+<div className="mb-8">
+<div className="relative w-40 h-40 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-2xl">
+{scan&&<>
+<span className="nfc-wave"></span>
+<span className="nfc-wave delay"></span>
+</>}
+<Icon className={"w-20 h-20 "+(scan?"animate-nfc":"")} />
+</div>
+</div>
+
+<h1 className="text-3xl font-bold mb-2">NFC UID Reader</h1>
+<p className="text-purple-200 mb-6">{status}</p>
+
+<button onClick={start} disabled={scan}
+className="px-8 py-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 font-bold text-lg shadow-xl active:scale-95">
+{scan?"Memindai...":"Mulai Pindai NFC"}
+</button>
+</div>
+):(
+<div className="p-6 flex flex-col items-center justify-center min-h-screen text-white text-center">
+<div className="w-28 h-28 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl flex items-center justify-center shadow-2xl animate-bounce-custom mb-6">
+✓
+</div>
+<h2 className="text-2xl font-bold mb-3">UID Kartu</h2>
+<div className="glass p-5 rounded-2xl text-xl font-mono text-indigo-700 mb-6">{uid}</div>
+
+<button onClick={()=>{setPage("scan");setUid("");setStatus("Siap memindai NFC")}}
+className="px-8 py-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 font-bold shadow-xl">
+Pindai Lagi
+</button>
+</div>
+);
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
